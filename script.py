@@ -72,9 +72,9 @@ def second_pass( commands, num_frames ):
         if command[0] == "vary":
             f_first = int(command[2])
             f_last = int(command[3])
-            for i in range(f_first, f_last + 1):
-                noframes = f_last - f_first + 1
-                prog = i - f_first + 1
+            noframes = f_last - f_first + 1
+            for i in range(0, noframes):
+                prog = i + 1
                 if float(command[5]) > float(command[4]):
                     knobs[i][command[1]] = float(command[5]-command[4]) / noframes * prog 
                 else:
@@ -141,16 +141,26 @@ def run(filename):
                 tmp = []
             elif c == 'move':
                 tmp = make_translate(args[0], args[1], args[2])
+                if len(args) > 3:
+                    scalar_mult(tmp, knobs[frame][args[3]])
                 matrix_mult(stack[-1], tmp)
                 stack[-1] = [x[:] for x in tmp]
                 tmp = []
             elif c == 'scale':
-                tmp = make_scale(args[0], args[1], args[2])
+                if len(args) > 3:
+                    c1 = knobs[frame][args[3]] * args[0]
+                    c2 = knobs[frame][args[3]] * args[1]
+                    c3 = knobs[frame][args[3]] * args[2]
+                    tmp = make_scale(c1,c2,c3)
+                else:
+                    tmp = make_scale(args[0],args[1],args[2])
                 matrix_mult(stack[-1], tmp)
                 stack[-1] = [x[:] for x in tmp]
                 tmp = []
             elif c == 'rotate':
                 theta = args[1] * (math.pi/180)
+                if len(args) > 2:
+                    theta *= knobs[frame][args[2]]
                 if args[0] == 'x':
                     tmp = make_rotX(theta)
                 elif args[0] == 'y':
